@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { ClinicalCase, VitalSignsSnapshot, Intervention } from '../schemas/case.schema';
-import { shockCase } from '../data/mock-scenarios';
+import { shockHipovolemico } from '../data/mock-scenarios';
 import { applyInterventionDelta, evaluateAlarms } from '../clinical-engine/engine';
 
 interface SimulatorState {
@@ -22,8 +22,8 @@ interface SimulatorState {
 }
 
 export const useSimulatorStore = create<SimulatorState>((set, get) => ({
-  scenario: shockCase,
-  currentVitals: shockCase.initialState,
+  scenario: shockHipovolemico,
+  currentVitals: shockHipovolemico.initialState,
   isRunning: false,
   timeElapsed: 0,
   simulationSpeed: 1,

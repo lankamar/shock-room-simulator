@@ -25,23 +25,19 @@ export function MonitorDisplay() {
   if (!currentVitals) return <div className="p-8 text-white">Loading...</div>;
 
   const alarms = currentVitals.activeAlarms || [];
-  
   const isAlarm = (param: string) => alarms.some(a => a.parameter === param || a.parameter.startsWith(param));
+  const rhythm = currentVitals.ecg.rhythm;
 
   return (
     <div className="flex flex-col flex-1 bg-black">
-      {/* Waveforms & Numerics Container */}
       <div className="flex flex-1 overflow-hidden">
-        
-        {/* WAVEFORMS (Left 2/3) */}
         <div className="w-2/3 flex flex-col p-2 gap-2 overflow-y-auto">
-          <WaveformCanvas param="ECG" color="#00FF00" speed={25} isRunning={isRunning} value={currentVitals.ecg.hr} />
+          <WaveformCanvas param="ECG" color="#00FF00" speed={25} isRunning={isRunning} value={currentVitals.ecg.hr} rhythm={rhythm} />
           <WaveformCanvas param="SpO2" color="#00FFFF" speed={25} isRunning={isRunning} value={currentVitals.ecg.hr} />
           <WaveformCanvas param="RESP" color="#FFFF00" speed={12.5} isRunning={isRunning} value={currentVitals.resp.rate} />
           <WaveformCanvas param="EtCO2" color="#FFFF00" speed={12.5} isRunning={isRunning} value={currentVitals.resp.rate} />
         </div>
 
-        {/* NUMERICS (Right 1/3) */}
         <div className="w-1/3 flex flex-col p-2 gap-2 bg-[#050508] border-l border-zinc-900 overflow-y-auto">
           <NumericTile 
             label="ECG" 
@@ -82,10 +78,8 @@ export function MonitorDisplay() {
              />
           </div>
         </div>
-
       </div>
 
-      {/* Control Bar (Under Monitor) */}
       <div className="h-14 bg-zinc-900 flex items-center px-4 justify-between border-t border-zinc-800">
         <div className="flex gap-4">
           <button onClick={isRunning ? pause : start} className="flex items-center gap-2 bg-zinc-800 hover:bg-zinc-700 px-4 py-1.5 rounded text-white text-sm font-medium transition-colors">
@@ -97,7 +91,7 @@ export function MonitorDisplay() {
           </button>
         </div>
         <div className="text-zinc-500 font-mono text-sm">
-          ALREDEDOR 0.0.0 HOST IEC-60601 COMPLIANT
+          SHOCK ROOM SIMULATOR v2.0
         </div>
       </div>
     </div>

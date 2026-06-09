@@ -6,6 +6,7 @@ interface WaveformCanvasProps {
   speed: number;
   isRunning: boolean;
   value?: number;
+  rhythm?: string;
 }
 
 function gauss(x: number, c: number, w: number, a: number): number {
@@ -17,7 +18,61 @@ function smoothstep(a: number, b: number, x: number): number {
   return t * t * (3 - 2 * t);
 }
 
-export function WaveformCanvas({ param, color, speed, isRunning, value }: WaveformCanvasProps) {
+function ecgMorphology(phase: number, beatAmp: number, rhythm?: string): number {
+  const r = rhythm || 'Sinus Rhythm';
+
+  if (r === 'Atrial Fibrillation') {
+    const fibNoise = (Math.random() - 0.5) * 4;
+    const qrs = gauss(phase, 0.265, 0.028, -38 * beatAmp);
+    const s = gauss(phase, 0.295, 0.018, 6);
+    const t = gauss(phase, 0.52, 0.075, -9 * beatAmp);
+    return qrs + s + t + fibNoise;
+  }
+
+  if (r === 'Ventricular Tachycardia') {
+    const qrs = gauss(phase, 0.24, 0.05, -45 * beatAmp);
+    const t = gauss(phase, 0.5, 0.06, -8 * beatAmp);
+    return qrs + t;
+  }
+
+  if (r === 'Sinus Bradycardia' || r === 'Sinus Rhythm' && (beatAmp < 0.9)) {
+    const p  = gauss(phase, 0.14, 0.028, -14 * beatAmp);
+    const q  = gauss(phase, 0.235, 0.012, 3);
+    const rv = gauss(phase, 0.265, 0.022, -48 * beatAmp);
+    const s  = gauss(phase, 0.295, 0.016, 7);
+    const tv = gauss(phase, 0.52, 0.085, -12 * beatAmp);
+    return p + q + rv + s + tv;
+  }
+
+  if (r === 'Sinus Tachycardia') {
+    const ampReduction = 1 - Math.min((beatAmp - 1) * 0.3, 0.3);
+    const p  = gauss(phase, 0.14, 0.028, -10 * beatAmp * ampReduction);
+    const q  = gauss(phase, 0.235, 0.012, 2);
+    const rv = gauss(phase, 0.265, 0.022, -38 * beatAmp * ampReduction);
+    const s  = gauss(phase, 0.295, 0.016, 5);
+    const tv = gauss(phase, 0.52, 0.07, -8 * beatAmp * ampReduction);
+    return p + q + rv + s + tv;
+  }
+
+  if (r === 'ST Elevation') {
+    const p  = gauss(phase, 0.14, 0.028, -12 * beatAmp);
+    const q  = gauss(phase, 0.235, 0.012, 3);
+    const rv = gauss(phase, 0.265, 0.022, -42 * beatAmp);
+    const s  = gauss(phase, 0.295, 0.016, 7);
+    const tv = gauss(phase, 0.52, 0.075, -10 * beatAmp);
+    const stElevation = (phase > 0.3 && phase < 0.45) ? -4 : 0;
+    return p + q + rv + s + tv + stElevation;
+  }
+
+  const p  = gauss(phase, 0.14, 0.028, -12 * beatAmp);
+  const q  = gauss(phase, 0.235, 0.012, 3);
+  const rv = gauss(phase, 0.265, 0.022, -42 * beatAmp);
+  const s  = gauss(phase, 0.295, 0.016, 7);
+  const tv = gauss(phase, 0.52, 0.075, -10 * beatAmp);
+  return p + q + rv + s + tv;
+}
+
+export function WaveformCanvas({ param, color, speed, isRunning, value, rhythm }: WaveformCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const stateRef = useRef({ x: 0, lastX: 0, lastY: 0, timePassed: 0, rng: 12345 });
 
@@ -57,15 +112,11 @@ export function WaveformCanvas({ param, color, speed, isRunning, value }: Wavefo
         if (param === 'ECG') {
           const beatMs = 60000 / rate;
           const phase = (tMs % beatMs) / beatMs;
-          const amp = 1 + Math.sin(tMs / 3000 + st.rng) * 0.06;
-          const p  = gauss(phase, 0.14, 0.028, -12 * amp);
-          const q  = gauss(phase, 0.235, 0.012, 3);
-          const r  = gauss(phase, 0.265, 0.022, -42 * amp);
-          const s  = gauss(phase, 0.295, 0.016, 7);
-          const t  = gauss(phase, 0.52, 0.075, -10 * amp);
+          const beatAmp = 1 + Math.sin(tMs / 3000 + st.rng) * 0.06;
+          yOff = ecgMorphology(phase, beatAmp, rhythm);
           const noise  = Math.sin(tMs / 83) * 0.8 + Math.sin(tMs / 137) * 0.6;
           const wander = Math.sin(tMs / 3000) * 2 + Math.sin(tMs / 7000) * 1.5;
-          yOff = p + q + r + s + t + noise + wander;
+          yOff += noise + wander;
 
         } else if (param === 'SpO2') {
           const beatMs = 60000 / rate;
@@ -136,11 +187,11 @@ export function WaveformCanvas({ param, color, speed, isRunning, value }: Wavefo
 
     animId = requestAnimationFrame(draw);
     return () => cancelAnimationFrame(animId);
-  }, [isRunning, param, color, speed, value]);
+  }, [isRunning, param, color, speed, value, rhythm]);
 
   return (
     <div className="relative w-full flex-1 bg-[#05050a] rounded flex items-center overflow-hidden border border-zinc-800">
-      <span className="absolute top-1 left-2 text-xs font-bold font-mono z-10" style={{ color }}>{param}</span>
+      <span className="absolute top-1 left-2 text-xs font-bold font-mono z-10" style={{ color }}>{param} {rhythm && param === 'ECG' ? `[${rhythm}]` : ''}</span>
       <canvas ref={canvasRef} width={1000} height={140} className="w-full h-full block" />
     </div>
   );

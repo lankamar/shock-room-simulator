@@ -27,24 +27,32 @@ export function MonitorDisplay() {
   const alarms = currentVitals.activeAlarms || [];
   const isAlarm = (param: string) => alarms.some(a => a.parameter === param || a.parameter.startsWith(param));
   const rhythm = currentVitals.ecg.rhythm;
+  const hr = currentVitals.ecg.hr;
 
   return (
     <div className="flex flex-col flex-1 bg-black">
       <div className="flex flex-1 overflow-hidden">
-        <div className="w-2/3 flex flex-col p-2 gap-2 overflow-y-auto">
-          <WaveformCanvas param="ECG" color="#00FF00" speed={25} isRunning={isRunning} value={currentVitals.ecg.hr} rhythm={rhythm} />
-          <WaveformCanvas param="SpO2" color="#00FFFF" speed={25} isRunning={isRunning} value={currentVitals.ecg.hr} />
-          <WaveformCanvas param="RESP" color="#FFFF00" speed={12.5} isRunning={isRunning} value={currentVitals.resp.rate} />
-          <WaveformCanvas param="EtCO2" color="#FFFF00" speed={12.5} isRunning={isRunning} value={currentVitals.resp.rate} />
+        <div className="w-2/3 flex flex-col p-2 gap-1.5 overflow-y-auto">
+          <div className="flex gap-1.5 flex-1">
+            <div className="flex-1 flex flex-col gap-1.5 min-w-0">
+              <WaveformCanvas param="ECG" color="#00FF00" speed={25} isRunning={isRunning} value={hr} rhythm={rhythm} lead="DII" />
+              <WaveformCanvas param="ECG" color="#00CCAA" speed={25} isRunning={isRunning} value={hr} rhythm={rhythm} lead="V1" />
+            </div>
+            <div className="flex-1 flex flex-col gap-1.5 min-w-0">
+              <WaveformCanvas param="SpO2" color="#00FFFF" speed={25} isRunning={isRunning} value={hr} />
+              <WaveformCanvas param="EtCO2" color="#FFFF00" speed={12.5} isRunning={isRunning} value={currentVitals.resp.rate} />
+            </div>
+          </div>
+          <WaveformCanvas param="RESP" color="#FFAA00" speed={12.5} isRunning={isRunning} value={currentVitals.resp.rate} />
         </div>
 
         <div className="w-1/3 flex flex-col p-2 gap-2 bg-[#050508] border-l border-zinc-900 overflow-y-auto">
           <NumericTile 
             label="ECG" 
-            value={Math.round(currentVitals.ecg.hr)} 
+            value={Math.round(hr)} 
             color="#00FF00" 
             unit="bpm" 
-            subValue={currentVitals.ecg.rhythm} 
+            subValue={rhythm} 
             isFlashing={isAlarm('HR')}
           />
           <NumericTile 
@@ -63,20 +71,12 @@ export function MonitorDisplay() {
             subValue={`(${Math.round(currentVitals.nibp.mean)})`}
             isFlashing={isAlarm('NIBP')}
           />
-          <div className="flex gap-2 flex-1">
-             <NumericTile 
-               label="RESP" 
-               value={Math.round(currentVitals.resp.rate)} 
-               color="#FFFF00" 
-               unit="rpm"
-             />
-             <NumericTile 
-               label="TEMP" 
-               value={currentVitals.temp.t1 || '--'} 
-               color="#FFFFFF" 
-               unit="ºC"
-             />
-          </div>
+          <NumericTile 
+            label="TEMP" 
+            value={currentVitals.temp.t1 || '--'} 
+            color="#FFFFFF" 
+            unit="ºC"
+          />
         </div>
       </div>
 
@@ -91,7 +91,7 @@ export function MonitorDisplay() {
           </button>
         </div>
         <div className="text-zinc-500 font-mono text-sm">
-          SHOCK ROOM SIMULATOR v2.0
+          <span className="text-emerald-500">INTEC</span> SHOCK ROOM v2.0
         </div>
       </div>
     </div>

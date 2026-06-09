@@ -7,6 +7,7 @@ interface WaveformCanvasProps {
   isRunning: boolean;
   value?: number;
   rhythm?: string;
+  lead?: string;
 }
 
 function gauss(x: number, c: number, w: number, a: number): number {
@@ -18,7 +19,7 @@ function smoothstep(a: number, b: number, x: number): number {
   return t * t * (3 - 2 * t);
 }
 
-function ecgMorphology(phase: number, beatAmp: number, rhythm?: string): number {
+function ecgMorphology(phase: number, beatAmp: number, rhythm?: string, lead?: string): number {
   const r = rhythm || 'Sinus Rhythm';
 
   if (r === 'Atrial Fibrillation') {
@@ -64,6 +65,14 @@ function ecgMorphology(phase: number, beatAmp: number, rhythm?: string): number 
     return p + q + rv + s + tv + stElevation;
   }
 
+  if (lead === 'V1') {
+    const p  = gauss(phase, 0.14, 0.028, -6 * beatAmp);
+    const rv = gauss(phase, 0.26, 0.018, -15 * beatAmp);
+    const s  = gauss(phase, 0.3, 0.025, 25);
+    const tv = gauss(phase, 0.52, 0.075, -8 * beatAmp);
+    return p + rv + s + tv;
+  }
+
   const p  = gauss(phase, 0.14, 0.028, -12 * beatAmp);
   const q  = gauss(phase, 0.235, 0.012, 3);
   const rv = gauss(phase, 0.265, 0.022, -42 * beatAmp);
@@ -72,7 +81,7 @@ function ecgMorphology(phase: number, beatAmp: number, rhythm?: string): number 
   return p + q + rv + s + tv;
 }
 
-export function WaveformCanvas({ param, color, speed, isRunning, value, rhythm }: WaveformCanvasProps) {
+export function WaveformCanvas({ param, color, speed, isRunning, value, rhythm, lead }: WaveformCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const stateRef = useRef({ x: 0, lastX: 0, lastY: 0, timePassed: 0, rng: 12345 });
 
@@ -113,7 +122,7 @@ export function WaveformCanvas({ param, color, speed, isRunning, value, rhythm }
           const beatMs = 60000 / rate;
           const phase = (tMs % beatMs) / beatMs;
           const beatAmp = 1 + Math.sin(tMs / 3000 + st.rng) * 0.06;
-          yOff = ecgMorphology(phase, beatAmp, rhythm);
+          yOff = ecgMorphology(phase, beatAmp, rhythm, lead);
           const noise  = Math.sin(tMs / 83) * 0.8 + Math.sin(tMs / 137) * 0.6;
           const wander = Math.sin(tMs / 3000) * 2 + Math.sin(tMs / 7000) * 1.5;
           yOff += noise + wander;
@@ -187,11 +196,11 @@ export function WaveformCanvas({ param, color, speed, isRunning, value, rhythm }
 
     animId = requestAnimationFrame(draw);
     return () => cancelAnimationFrame(animId);
-  }, [isRunning, param, color, speed, value, rhythm]);
+  }, [isRunning, param, color, speed, value, rhythm, lead]);
 
   return (
     <div className="relative w-full flex-1 bg-[#05050a] rounded flex items-center overflow-hidden border border-zinc-800">
-      <span className="absolute top-1 left-2 text-xs font-bold font-mono z-10" style={{ color }}>{param} {rhythm && param === 'ECG' ? `[${rhythm}]` : ''}</span>
+      <span className="absolute top-1 left-2 text-xs font-bold font-mono z-10" style={{ color }}>{lead || param} {rhythm && param === 'ECG' ? `[${rhythm}]` : ''}</span>
       <canvas ref={canvasRef} width={1000} height={140} className="w-full h-full block" />
     </div>
   );

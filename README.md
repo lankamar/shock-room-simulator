@@ -1,20 +1,72 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://ai.google.dev/static/site-assets/images/share-ais-513315318.png" />
-</div>
+# 🏥 Shock Room Simulator
 
-# Run and deploy your AI Studio app
+**Simulador de Monitor de Paciente para Enseñanza de Enfermería en Terapia Intensiva**
 
-This contains everything you need to run your app locally.
+---
 
-View your app in AI Studio: https://ai.studio/apps/5168bbb4-a466-4c8c-9c7d-0368a28e5d50
+## 🔗 LIVE DEMO
 
-## Run Locally
+👉 **[Abrir Shock Room Simulator](https://lankamar.github.io/shock-room-simulator/)** 👈
 
-**Prerequisites:**  Node.js
+---
 
+## 🎯 Acerca de
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+Simulador de alta fidelidad de un monitor multiparamétrico de UTI/Shock Room.
+Desarrollado para la enseñanza de enfermería en el marco del curso **VibeCoding en la Enseñanza** de **CITEP-UBA**.
+
+**Características:**
+- Monitor con 2 derivaciones ECG (DII y V1), SpO2, RESP, EtCO2
+- Curvas suaves con morfología realista (Gaussianas)
+- 5 escenarios clínicos basados en patologías reales
+- Selector de casos clínicos
+- Tutor Clínico IA (con Gemini API o modo offline)
+- Sistema de alarmas IEC 60601-1-8
+
+---
+
+## ⚡ Desarrollo Local
+
+```bash
+npm install
+npm run dev
+# Abrir http://localhost:3000
+```
+
+## 🧠 Tutor IA
+
+Para activar el Tutor Clínico con Gemini, crear `.env.local`:
+
+```bash
+VITE_GEMINI_API_KEY=tu-api-key-de-gemini
+```
+
+Sin API key funciona en modo offline con respuestas basadas en reglas clínicas.
+
+---
+
+## 🚀 Deploy en Hostinger (Node.js)
+
+```bash
+npm run build
+npm start
+```
+
+El servidor Express sirve los archivos en `dist/` y escucha en el puerto configurado (`PORT`).
+
+---
+
+## 📚 Escenarios Clínicos
+
+| Escenario | Patología | Basado en |
+|-----------|-----------|-----------|
+| Shock Hipovolémico | Hemorragia + taquicardia | ATLS 10th Ed |
+| Intoxicación por CO | El gran simulador | Manual Clínico CO |
+| Bronquiolitis Grave | Lactante con TAL 10/12 | Emergencias Respiratorias Pediátricas |
+| Shock Distributivo | Mastocitosis/Anafilaxia | Monitorización Multimodal |
+| Neumonía con Derrame | NAC + derrame pleural | Emergencias Respiratorias Pediátricas |
+
+---
+
+Desarrollado por **Lic. Marcelo Omar Lancry Kamycki** (@lankamar)
+CITEP-UBA | VibeCoding 1°C 2026

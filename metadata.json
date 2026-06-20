@@ -1,0 +1,8 @@
+{
+  "name": "Shock Room Simulator",
+  "description": "Simulador de monitorización cardiorrespiratoria de alta fidelidad para entrenamiento de enfermería en emergencias.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

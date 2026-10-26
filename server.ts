@@ -12,7 +12,10 @@ const PORT = 3000;
 app.use(express.json());
 
 // Initialize Gemini Client safely
-const apiKey = process.env.GEMINI_API_KEY || "AIzaSyCqZx86lalBV3WBWRo9C1efmOBp3r_s9Uk";
+const apiKey = process.env.GEMINI_API_KEY;
+if (!apiKey) {
+  throw new Error("GEMINI_API_KEY no está definida. Configurala como variable de entorno; nunca hardcodees la clave en el repositorio.");
+}
 const ai = new GoogleGenAI({
   apiKey: apiKey,
   httpOptions: {

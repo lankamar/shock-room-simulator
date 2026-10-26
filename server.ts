@@ -13,21 +13,31 @@ app.use(express.json());
 
 // Initialize Gemini Client safely
 const apiKey = process.env.GEMINI_API_KEY;
-if (!apiKey) {
-  throw new Error("GEMINI_API_KEY no está definida. Configurala como variable de entorno; nunca hardcodees la clave en el repositorio.");
+const ai = apiKey
+  ? new GoogleGenAI({
+      apiKey,
+      httpOptions: {
+        headers: {
+          'User-Agent': 'aistudio-build',
+        }
+      }
+    })
+  : null;
+
+if (!ai) {
+  console.warn("[tutor] GEMINI_API_KEY no configurada: /api/tutor responderá 503 hasta definirla.");
 }
-const ai = new GoogleGenAI({
-  apiKey: apiKey,
-  httpOptions: {
-    headers: {
-      'User-Agent': 'aistudio-build',
-    }
-  }
-});
 
 // Tutor AI API Endpoint
 app.post("/api/tutor", async (req, res) => {
   try {
+    if (!ai) {
+      return res.status(503).json({
+        error: "GEMINI_API_KEY no configurada",
+        detail: "Definí GEMINI_API_KEY en .env.local (local) o en los secrets de AI Studio (desplegado)."
+      });
+    }
+
     const { scenarioTitle, vitals, tutorMessage, activeAlarms, userQuestion, lastIntervention } = req.body;
 
     const systemPrompt = `
